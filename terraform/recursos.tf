@@ -36,7 +36,7 @@ resource "azurerm_network_interface" "nic" {
 
 # Registro de contenedores de Azure utilizando el servicio Azure Container Registry
 resource "azurerm_container_registry" "acr" {
-  name                = "mycontainerregistry"
+  name                = "maseiraCR"
   resource_group_name = azurerm_resource_group.acr_rg.name
   location            = azurerm_resource_group.acr_rg.location
   sku                 = "Basic"
@@ -69,7 +69,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   source_image_reference {
     publisher = "Canonical"
     offer     = "UbuntuServer"
-    sku       = "20.04-LTS"
+    sku       = "18.04-LTS"
     version   = "latest"
   }
 }
