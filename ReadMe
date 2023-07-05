@@ -1,0 +1,37 @@
+
+Proyecto de Infraestructura y Despliegue Automatizado en Azure
+Este repositorio contiene el código y la documentación relacionados con un proyecto de infraestructura y despliegue automatizado en Microsoft Azure. El objetivo principal del proyecto es crear una infraestructura automatizada en Azure utilizando Terraform, implementar servicios y aplicaciones utilizando herramientas como Ansible, Podman y Kubernetes, y garantizar el acceso seguro y la disponibilidad de las aplicaciones desplegadas.
+
+Objetivos del proyecto
+Los objetivos principales de este proyecto son los siguientes:
+
+Crear infraestructura automatizada en Azure utilizando Terraform.
+Utilizar Ansible para automatizar la instalación y configuración de servicios en la infraestructura.
+Desplegar aplicaciones en forma de contenedor utilizando Podman sobre máquinas virtuales en Azure.
+Implementar un cluster de Kubernetes gestionado (AKS) en Azure.
+Desplegar aplicaciones con almacenamiento persistente sobre el cluster AKS.
+Estructura del repositorio
+El repositorio está estructurado de la siguiente manera:
+
+/terraform: Contiene los archivos de configuración de Terraform para crear la infraestructura en Azure.
+/ansible: Incluye los playbooks y roles de Ansible para la instalación y configuración de servicios en la infraestructura.
+
+Antes de ejecutar el proyecto, asegúrese de tener instalados los siguientes componentes:
+
+Terraform
+Ansible
+Podman
+Azure CLI
+Además, debe tener una cuenta en Microsoft Azure con los permisos necesarios para crear recursos.
+
+Despliegue
+Clonar este repositorio: git clone <URL_REPOSITORIO>
+Configurar las credenciales de Azure: az login
+Ejecutar Terraform para crear la infraestructura: cd terraform && terraform apply
+Configurar las variables de Ansible en el archivo ansible/vars.yml.
+Ejecutar los playbooks de Ansible para la instalación y configuración de servicios: cd ../ansible && ansible-playbook -i inventory.yml site.yml
+Documentación adicional
+Para obtener más detalles sobre el proceso de despliegue, los recursos resultantes en Azure y la descripción de las aplicaciones desplegadas, consulte el informe en formato PDF incluido en este repositorio.
+
+Licencia
+Este proyecto se encuentra bajo la licencia MIT. Consulte el archivo LICENSE para obtener más información sobre las restricciones y el uso permitido por esta licencia.
