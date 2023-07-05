@@ -43,6 +43,14 @@ resource "azurerm_container_registry" "acr" {
   admin_enabled       = false
 }
 
+# Dirección IP pública para podmanVm
+resource "azurerm_public_ip" "public_ip" {
+  name                = "public_ip"
+  resource_group_name = azurerm_resource_group.acr_rg.name
+  location            = azurerm_resource_group.acr_rg.location
+  allocation_method   = "Static"
+}
+
 # Maquina virtual Linux en Azure
 resource "azurerm_linux_virtual_machine" "vm" {
   name                = "podmanVm"
@@ -72,6 +80,9 @@ resource "azurerm_linux_virtual_machine" "vm" {
     sku       = "18.04-LTS"
     version   = "latest"
   }
+
+  # Asociar la dirección IP pública a la máquina virtual
+  public_ip_address_id = azurerm_public_ip.public_ip.id
 }
 
 # Cluster de Kubernetes administrado por Azure Kubernetes Service
@@ -93,4 +104,3 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     type = "SystemAssigned"
   }
 }
-
