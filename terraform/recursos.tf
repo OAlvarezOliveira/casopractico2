@@ -36,7 +36,7 @@ resource "azurerm_network_interface" "nic" {
 
 # Registro de contenedores de Azure utilizando el servicio Azure Container Registry
 resource "azurerm_container_registry" "acr" {
-  name                = "maseiraCR"
+  name                = "maseiraACR"
   resource_group_name = azurerm_resource_group.acr_rg.name
   location            = azurerm_resource_group.acr_rg.location
   sku                 = "Basic"
