@@ -43,16 +43,8 @@ resource "azurerm_container_registry" "acr" {
   resource_group_name = azurerm_resource_group.acr_rg.name
   location            = azurerm_resource_group.acr_rg.location
   sku                 = "Basic"
-  admin_enabled       = false
+  admin_enabled       = true
 
-  network_rule_set {
-    default_action = "Deny"
-
-    ip_rule {
-      action   = "Allow"
-      ip_range = "0.0.0.0/0"
-    }
-  }
 }
 
 # Dirección IP pública para podmanVm
