@@ -1,5 +1,6 @@
 output "acr_admin_pass" {
-  value = azurerm_container_registry.acr.admin_password
+  value     = azurerm_container_registry.acr.admin_password
+  sensitive = true
 }
 
 output "acr_admin_user" {
@@ -17,3 +18,4 @@ output "ssh_user" {
 output "vm_public_ip" {
   value = azurerm_public_ip.public_ip.ip_address
 }
+
