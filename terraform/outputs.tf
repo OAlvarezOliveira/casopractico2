@@ -5,6 +5,7 @@ output "acr_admin_pass" {
 
 output "acr_admin_user" {
   value = azurerm_container_registry.acr.admin_username
+  sensitive = true
 }
 
 output "acr_login_server" {
