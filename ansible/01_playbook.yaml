@@ -1,0 +1,122 @@
+---
+- name: Instalar podman, herramientas HTTP y openssl
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Actualizar paquetes
+      apt:
+        update_cache: yes
+      become: true
+
+    - name: Instalar podman, httpd-tools y openssl
+      apt:
+        name: "{{ item }}"
+        state: present
+      become: true
+      loop:
+        - podman
+        - apache2-utils
+        - openssl
+
+- name: Crear directorio webserver
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Crear directorio webserver
+      file:
+        path: /home/adminuser/webserver
+        state: directory
+      become: true
+
+- name: Cambiar al directorio webserver
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Cambiar al directorio webserver
+      shell: cd /home/adminuser/webserver
+
+- name: Crear fichero para la base de datos de usuarios
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Crear fichero de usuarios
+      command: htpasswd -cBd /home/adminuser/webserver/.cred adminuser D3v0ps.2023
+      become: true
+
+- name: Generar certificado autofirmado X509
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Generar clave privada RSA
+      openssl_privatekey:
+        path: /home/adminuser/webserver/localhost.key
+        size: 2048
+        type: RSA
+      become: true
+
+    - name: Generar solicitud de firma de certificado (CSR)
+      openssl_csr:
+        path: /home/adminuser/webserver/localhost.csr
+        privatekey_path: /home/adminuser/webserver/localhost.key
+        common_name: podmanVm
+        country_name: ES
+        state_or_province_name: Madrid
+        locality_name: Madrid
+        organization_name: DevOps
+        organizational_unit_name: Ejemplo
+      become: true
+
+    - name: Generar certificado
+      openssl_certificate:
+        path: /home/adminuser/webserver/localhost.crt
+        privatekey_path: /home/adminuser/webserver/localhost.key
+        csr_path: /home/adminuser/webserver/localhost.csr
+        force: yes
+        days: 365
+      become: true
+
+- name: Generar archivo index.html
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Crear archivo index.html
+      copy:
+        content: "<p>Este es mi web server para CS2 montado en podmanVm</p>"
+        dest: /home/adminuser/webserver/index.html
+      become: true
+
+- name: Configurar servicio HTTPS con autenticación de usuario y contraseña
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Copiar archivo de configuración de Apache
+      copy:
+        content: |
+          <VirtualHost *:443>
+              ServerName localhost
+
+              DocumentRoot /home/adminuser/webserver
+
+              SSLEngine on
+              SSLCertificateFile /home/adminuser/webserver/localhost.crt
+              SSLCertificateKeyFile /home/adminuser/webserver/localhost.key
+
+              <Directory /home/adminuser/webserver>
+                  AuthType Basic
+                  AuthName "Restricted Content"
+                  AuthUserFile /home/adminuser/webserver/.cred
+                  Require valid-user
+              </Directory>
+          </VirtualHost>
+        dest: /etc/apache2/sites-available/default-ssl.conf
+      become: true
+
+    - name: Habilitar el sitio SSL
+      command: a2ensite default-ssl.conf
+      become: true
+
+    - name: Reiniciar el servicio Apache
+      service:
+        name: apache2
+        state: restarted
+      become: true
