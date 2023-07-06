@@ -26,8 +26,8 @@ Azure CLI
 Además, debe tener una cuenta en Microsoft Azure con los permisos necesarios para crear recursos.
 
 Clonar este repositorio: git clone https://github.com/OAlvarezOliveira/casopractico2.git
-Configurar las credenciales de Azure: az login
-Ejecutar Terraform para crear la infraestructura: cd terraform && terraform apply
+Configurar las credenciales de Azure
+Ejecutar Terraform para crear la infraestructura
 Ejecutar los playbooks de Ansible vía deploy.sh en el nodo de control
 
 Documentación adicional
