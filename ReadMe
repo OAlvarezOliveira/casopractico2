@@ -25,11 +25,11 @@ Azure CLI
 Además, debe tener una cuenta en Microsoft Azure con los permisos necesarios para crear recursos.
 
 Despliegue
-Clonar este repositorio: git clone <URL_REPOSITORIO>
+Clonar este repositorio: git clone https://github.com/OAlvarezOliveira/casopractico2.git
 Configurar las credenciales de Azure: az login
 Ejecutar Terraform para crear la infraestructura: cd terraform && terraform apply
-Configurar las variables de Ansible en el archivo ansible/vars.yml.
-Ejecutar los playbooks de Ansible para la instalación y configuración de servicios: cd ../ansible && ansible-playbook -i inventory.yml site.yml
+Ejecutar los playbooks de Ansible vía deploy.sh en el nodo de control
+
 Documentación adicional
 Para obtener más detalles sobre el proceso de despliegue, los recursos resultantes en Azure y la descripción de las aplicaciones desplegadas, consulte el informe en formato PDF incluido en este repositorio.
 
