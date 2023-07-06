@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Lista de playbooks a ejecutar
-playbooks=("01_playbook.yaml" "02_playbook2.yaml")
+playbooks=("01_playbook.yaml" "02_playbook.yaml")
 
 # Ruta al inventario de Ansible
 inventory="hosts.txt"
