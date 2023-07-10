@@ -2,7 +2,7 @@
 - name: Configuración del servidor web con Podman y Ansible
   hosts: podman_vm
   become: yes
-  become_user: adminuser
+  become_user: root
   tasks:
     - name: Tarea 1 - Instalar herramientas requeridas
       package:
@@ -99,13 +99,37 @@
 
     - name: Tarea 13 - Iniciar sesión en el registro de contenedores
       command:
-        cmd: podman login maseiraacr.azurecr.io -u maseiraACR -p TLRy0jHXGKgMYQtE5m5DsVQHi5Y9UruO1aF6e8p2WF+ACRBB+dMX
+        cmd: podman login maseiraacr.azurecr.io -u maseiraACR -p rrQm4ydFuvxQaEuokeDFIhMVYQVboE6BUS45Wus1qJ+ACRDpAKXo
 
-    - name: Tarea 14 - Subir imagen del contenedor al registro
+    - name: Tarea 14 - Etiquetar imagen del contenedor
+      command:
+        cmd: sudo podman tag localhost/webserver:latest maseiraacr.azurecr.io/webserver:casopractico2
+      become: yes
+      become_user: adminuser
+
+    - name: Tarea 15 - Subir imagen del contenedor al registro
       command:
         cmd: podman push maseiraacr.azurecr.io/webserver:casopractico2
         chdir: "{{ ansible_user_dir }}/webserver"
 
-    - name: Tarea 15 - Crear contenedor del servicio web
+    - name: Tarea 16 - Crear contenedor del servicio web
       command:
-        cmd: podman run -d --name web -p 8080:443 maseiraacr.azurecr.io/webserver:casopractico2
+        cmd: podman create --name web -p 8080:443 maseiraacr.azurecr.io/webserver:casopractico2
+
+    - name: Tarea 17 - Generar el archivo para gestionar el contenedor a través de systemd
+      template:
+        src: templates/container-web.service
+        dest: "/etc/systemd/system/container-web.service"
+        owner: adminuser
+        group: adminuser
+        mode: "0644"
+
+    - name: Tarea 18 - Recargar la configuración de systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Tarea 19 - Iniciar la aplicación web desde systemd
+      systemd:
+        name: container-web.service
+        enabled: yes
+        state: started
