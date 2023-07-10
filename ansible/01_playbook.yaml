@@ -99,7 +99,7 @@
 
     - name: Tarea 13 - Iniciar sesión en el registro de contenedores
       command:
-        cmd: podman login maseiraacr.azurecr.io -u maseiraACR -p rrQm4ydFuvxQaEuokeDFIhMVYQVboE6BUS45Wus1qJ+ACRDpAKXo
+        cmd: podman login maseiraacr.azurecr.io -u maseiraACR -p B1uRsxNeW7myw1gTj26yaHPRfDyJiirWsBHUJRPmaq+ACRBMzjHc
 
     - name: Tarea 14 - Etiquetar imagen del contenedor
       command:
