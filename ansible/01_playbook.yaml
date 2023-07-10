@@ -64,9 +64,10 @@
         content: "<p>Web Server protegido por X509 y log por usuario y password</p>"
         dest: /home/adminuser/webserver/index.html
 
-    - name: Tarea 9 - Establecer permisos en el archivo index.html
-      file:
-        path: /home/adminuser/webserver/index.html
+    - name: Tarea 9 - Definir configuración del servidor web
+      template:
+        src: templates/httpd.conf.j2
+        dest: "{{ ansible_user_dir }}/webserver/httpd.conf"
         owner: adminuser
         group: adminuser
         mode: "0644"
