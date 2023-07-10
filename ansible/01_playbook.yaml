@@ -67,7 +67,7 @@
 
     - name: Tarea 9 - Definir configuración del servidor web
       template:
-        src: templates/httpd.conf.j2
+        src: templates/httpd.conf
         dest: "{{ ansible_user_dir }}/webserver/httpd.conf"
         owner: adminuser
         group: adminuser
@@ -87,7 +87,7 @@
 
     - name: Tarea 11 - Crear el archivo Containerfile
       template:
-        src: templates/Containerfile.j2
+        src: templates/Containerfile
         dest: "{{ ansible_user_dir }}/webserver/Containerfile"
         owner: adminuser
         group: adminuser
