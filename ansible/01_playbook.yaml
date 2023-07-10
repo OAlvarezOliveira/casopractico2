@@ -1,122 +1,115 @@
 ---
-- name: Instalar podman, herramientas HTTP y openssl
-  hosts: localhost
-  become: true
+- name: Configuración del servidor web con Podman y Ansible
+  hosts: podman_vm
+  become: no
   tasks:
-    - name: Actualizar paquetes
-      apt:
-        update_cache: yes
-      become: true
-
-    - name: Instalar podman, httpd-tools y openssl
-      apt:
-        name: "{{ item }}"
+    - name: Tarea 1 - Instalar herramientas requeridas
+      become: yes
+      package:
+        name:
+          - podman
+          - skopeo
+          - httpd
+          - httpd-tools
+          - openssl
         state: present
-      become: true
-      loop:
-        - podman
-        - apache2-utils
-        - openssl
 
-- name: Crear directorio webserver
-  hosts: localhost
-  become: true
-  tasks:
-    - name: Crear directorio webserver
+    - name: Tarea 2 - Instalar módulo passlib
+      become: yes
+      pip:
+        name: passlib
+        state: present
+
+    - name: Tarea 3 - Crear directorio de trabajo
       file:
-        path: /home/adminuser/webserver
+        path: webserver
         state: directory
-      become: true
 
-- name: Cambiar al directorio webserver
-  hosts: localhost
-  become: true
-  tasks:
-    - name: Cambiar al directorio webserver
-      shell: cd /home/adminuser/webserver
+    - name: Tarea 4 - Crear archivo de credenciales
+      become: yes
+      htpasswd:
+        path: webserver/.cred
+        name: caramelo
+        password: mentolin
+        owner: adminuser
+        group: adminuser
+        mode: '0600'
 
-- name: Crear fichero para la base de datos de usuarios
-  hosts: localhost
-  become: true
-  tasks:
-    - name: Crear fichero de usuarios
-      command: htpasswd -cBd /home/adminuser/webserver/.cred adminuser D3v0ps.2023
-      become: true
-
-- name: Generar certificado autofirmado X509
-  hosts: localhost
-  become: true
-  tasks:
-    - name: Generar clave privada RSA
+    - name: Tarea 5 - Generar certificado autofirmado
       openssl_privatekey:
-        path: /home/adminuser/webserver/localhost.key
+        path: webserver/localhost.key
         size: 2048
-        type: RSA
-      become: true
 
-    - name: Generar solicitud de firma de certificado (CSR)
+    - name: Tarea 6 - Crear petición de firma del certificado
       openssl_csr:
-        path: /home/adminuser/webserver/localhost.csr
-        privatekey_path: /home/adminuser/webserver/localhost.key
-        common_name: podmanVm
-        country_name: ES
-        state_or_province_name: Madrid
-        locality_name: Madrid
-        organization_name: DevOps
-        organizational_unit_name: Ejemplo
-      become: true
+        path: webserver/localhost.csr
+        privatekey_path: webserver/localhost.key
+        subject:
+          C: ES
+          ST: Madrid
+          L: Madrid
+          O: DevOps
+          OU: Ejemplo
+          CN: vm1
 
-    - name: Generar certificado
+    - name: Tarea 7 - Crear certificado autofirmado
       openssl_certificate:
-        path: /home/adminuser/webserver/localhost.crt
-        privatekey_path: /home/adminuser/webserver/localhost.key
-        csr_path: /home/adminuser/webserver/localhost.csr
-        force: yes
-        days: 365
-      become: true
+        path: webserver/localhost.crt
+        privatekey_path: webserver/localhost.key
+        csr_path: webserver/localhost.csr
+        provider: selfsigned
 
-- name: Generar archivo index.html
-  hosts: localhost
-  become: true
-  tasks:
-    - name: Crear archivo index.html
+    - name: Tarea 8 - Definir página principal del servidor web
       copy:
-        content: "<p>Este es mi web server para CS2 montado en podmanVm</p>"
+        content: "<p>Web Server protegido por X509 y log por usuario y password</p>"
         dest: /home/adminuser/webserver/index.html
-      become: true
 
-- name: Configurar servicio HTTPS con autenticación de usuario y contraseña
-  hosts: localhost
-  become: true
-  tasks:
-    - name: Copiar archivo de configuración de Apache
+    - name: Tarea 9 - Establecer permisos en el archivo index.html
+      file:
+        path: /home/adminuser/webserver/index.html
+        owner: adminuser
+        group: adminuser
+        mode: "0644"
+
+    - name: Tarea 10 - Definir configuración del servidor web
       copy:
         content: |
-          <VirtualHost *:443>
-              ServerName localhost
+          ServerRoot "/usr/local/apache2"
+          Listen 443
+          # Resto del contenido del archivo httpd.conf
+        dest: webserver/httpd.conf
 
-              DocumentRoot /home/adminuser/webserver
+    - name: Tarea 11 - Establecer configuración de autenticación básica
+      copy:
+        content: |
+          AuthType Basic
+          AuthName "Restricted Content"
+          AuthUserFile /usr/local/apache2/.cred
+          Require valid-user
+        dest: webserver/.htaccess
 
-              SSLEngine on
-              SSLCertificateFile /home/adminuser/webserver/localhost.crt
-              SSLCertificateKeyFile /home/adminuser/webserver/localhost.key
+    - name: Tarea 12 - Crear el archivo Containerfile
+      template:
+        src: templates/Containerfile.j2
+        dest: /home/adminuser/webserver/Containerfile
 
-              <Directory /home/adminuser/webserver>
-                  AuthType Basic
-                  AuthName "Restricted Content"
-                  AuthUserFile /home/adminuser/webserver/.cred
-                  Require valid-user
-              </Directory>
-          </VirtualHost>
-        dest: /etc/apache2/sites-available/default-ssl.conf
-      become: true
+    - name: Tarea 13 - Generar imagen del contenedor
+      command:
+        cmd: sudo podman build -t webserver -f Containerfile .
+      args:
+        chdir: /home/adminuser/webserver
+      become: yes
+      become_user: adminuser
 
-    - name: Habilitar el sitio SSL
-      command: a2ensite default-ssl.conf
-      become: true
+    - name: Tarea 14 - Iniciar sesión en el registro de contenedores
+      command:
+        cmd: podman login maseiraacr.azurecr.io -u maseiraACR -p TLRy0jHXGKgMYQtE5m5DsVQHi5Y9UruO1aF6e8p2WF+ACRBB+dMX
 
-    - name: Reiniciar el servicio Apache
-      service:
-        name: apache2
-        state: restarted
-      become: true
+    - name: Tarea 15 - Subir imagen del contenedor al registro
+      command:
+        cmd: sudo podman push maseiraacr.azurecr.io/webserver:casopractico2
+      become: yes
+      become_user: adminuser
+
+    - name: Tarea 16 - Crear contenedor del servicio web
+      shell: podman run -d --name web -p 8080:443 maseiraacr.azurecr.io/webserver:casopractico2

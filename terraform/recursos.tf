@@ -44,7 +44,6 @@ resource "azurerm_container_registry" "acr" {
   location            = azurerm_resource_group.acr_rg.location
   sku                 = "Basic"
   admin_enabled       = true
-
 }
 
 # Dirección IP pública para podmanVm
@@ -79,10 +78,16 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 
   source_image_reference {
-    publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "18.04-LTS"
-    version   = "latest"
+    publisher = "cognosys"
+    offer     = "centos-8-stream-free"
+    sku       = "centos-8-stream-free"
+    version   = "22.03.28"
+  }
+
+  plan {
+    name      = "centos-8-stream-free"
+    product   = "centos-8-stream-free"
+    publisher = "cognosys"
   }
 }
 
