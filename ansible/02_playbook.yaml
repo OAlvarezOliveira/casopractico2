@@ -1,10 +1,9 @@
 ---
-- name: Configuración del servidor web con Podman y Ansible
+- name: Puesta en marcha del servidor contenerizado
   hosts: podman_vm
   become: yes
   become_user: root
   tasks:
-
     - name: Tarea 12 - Generar imagen del contenedor
       ansible.builtin.command:
         cmd: podman build -t webserver -f /webserver/Containerfile /webserver

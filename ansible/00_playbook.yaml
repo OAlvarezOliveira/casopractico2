@@ -1,5 +1,5 @@
 ---
-- name: Configuración del servidor web con Podman y Ansible
+- name: Configuración de la VM
   hosts: podman_vm
   become: yes
   become_user: root
