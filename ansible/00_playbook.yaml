@@ -1,0 +1,70 @@
+---
+- name: Configuración del servidor web con Podman y Ansible
+  hosts: podman_vm
+  become: yes
+  become_user: root
+  tasks:
+    - name: Tarea 1 - Instalar herramientas requeridas
+      package:
+        name:
+          - podman
+          - skopeo
+          - httpd
+          - httpd-tools
+          - openssl
+        state: present
+
+    - name: Tarea 2 - Instalar módulo passlib
+      pip:
+        name: passlib
+        state: present
+
+    - name: Tarea 3 - Crear directorio de trabajo
+      file:
+        path: "/webserver"
+        state: directory
+        owner: root
+        group: root
+        mode: "0775"
+
+    - name: Tarea 4 - Crear archivo de credenciales
+      community.general.htpasswd:
+        path: "/webserver/.cred"
+        name: caramelo
+        password: mentolin
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Tarea 5 - Generar certificado autofirmado
+      community.crypto.openssl_privatekey:
+        path: "/webserver/localhost.key"
+        size: 2048
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Tarea 6 - Crear petición de firma del certificado
+      community.crypto.openssl_csr:
+        path: "/webserver/localhost.csr"
+        privatekey_path: "/webserver/localhost.key"
+        subject:
+          C: ES
+          ST: Madrid
+          L: Madrid
+          O: DevOps
+          OU: Ejemplo
+          CN: vm1
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Tarea 7 - Crear certificado autofirmado
+      community.crypto.x509_certificate:
+        path: "/webserver/localhost.crt"
+        privatekey_path: "/webserver/localhost.key"
+        csr_path: "/webserver/localhost.csr"
+        provider: selfsigned
+        owner: root
+        group: root
+        mode: "0644"

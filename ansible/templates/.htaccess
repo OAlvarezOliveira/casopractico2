@@ -1,4 +1,4 @@
 AuthType Basic
 AuthName "Restricted Content"
-AuthUserFile /usr/local/apache2/.creds
+AuthUserFile /usr/local/apache2/.cred
 Require valid-user

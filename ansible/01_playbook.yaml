@@ -1,66 +1,12 @@
----
-- name: Configuración del servidor web con Podman y Ansible
+ - name: Configuración del servidor web con Podman y Ansible
   hosts: podman_vm
   become: yes
   become_user: root
-  tasks:
-    - name: Tarea 1 - Instalar herramientas requeridas
-      package:
-        name:
-          - podman
-          - skopeo
-          - httpd
-          - httpd-tools
-          - openssl
-        state: present
-
-    - name: Tarea 2 - Instalar módulo passlib
-      pip:
-        name: passlib
-        state: present
-
-    - name: Tarea 3 - Crear directorio de trabajo
-      file:
-        path: "{{ ansible_user_dir }}/webserver"
-        state: directory
-
-    - name: Tarea 4 - Crear archivo de credenciales
-      htpasswd:
-        path: "{{ ansible_user_dir }}/webserver/.cred"
-        name: caramelo
-        password: mentolin
-        owner: adminuser
-        group: adminuser
-        mode: '0600'
-
-    - name: Tarea 5 - Generar certificado autofirmado
-      openssl_privatekey:
-        path: "{{ ansible_user_dir }}/webserver/localhost.key"
-        size: 2048
-
-    - name: Tarea 6 - Crear petición de firma del certificado
-      openssl_csr:
-        path: "{{ ansible_user_dir }}/webserver/localhost.csr"
-        privatekey_path: "{{ ansible_user_dir }}/webserver/localhost.key"
-        subject:
-          C: ES
-          ST: Madrid
-          L: Madrid
-          O: DevOps
-          OU: Ejemplo
-          CN: vm1
-
-    - name: Tarea 7 - Crear certificado autofirmado
-      openssl_certificate:
-        path: "{{ ansible_user_dir }}/webserver/localhost.crt"
-        privatekey_path: "{{ ansible_user_dir }}/webserver/localhost.key"
-        csr_path: "{{ ansible_user_dir }}/webserver/localhost.csr"
-        provider: selfsigned
-
+  tasks:   
     - name: Tarea 8 - Definir página principal del servidor web
       template:
         src: templates/index.html
-        dest: "{{ ansible_user_dir }}/webserver/index.html"
+        dest: "/webserver/index.html"
         owner: adminuser
         group: adminuser
         mode: "0644"
@@ -68,15 +14,15 @@
     - name: Tarea 9 - Definir configuración del servidor web
       template:
         src: templates/httpd.conf
-        dest: "{{ ansible_user_dir }}/webserver/httpd.conf"
+        dest: "/webserver/httpd.conf"
         owner: adminuser
         group: adminuser
         mode: "0644"
 
     - name: Tarea 10 - Definir configuración de autenticación básica
       template:
-        src: templates/.htaccess.j2
-        dest: "{{ ansible_user_dir }}/webserver/.htaccess"
+        src: templates/.htaccess
+        dest: "/webserver/.htaccess"
         owner: adminuser
         group: adminuser
         mode: "0644"
@@ -84,48 +30,7 @@
     - name: Tarea 11 - Crear el archivo Containerfile
       template:
         src: templates/Containerfile
-        dest: "{{ ansible_user_dir }}/webserver/Containerfile"
+        dest: "/webserver/Containerfile"
         owner: adminuser
         group: adminuser
         mode: "0644"
-
-    - name: Tarea 12 - Generar imagen del contenedor
-      command:
-        cmd: podman build -t webserver -f "{{ ansible_user_dir }}/webserver/Containerfile" "{{ ansible_user_dir }}/webserver"
-
-    - name: Tarea 13 - Iniciar sesión en el registro de contenedores
-      command:
-        cmd: podman login maseiraacr.azurecr.io -u maseiraACR -p B1uRsxNeW7myw1gTj26yaHPRfDyJiirWsBHUJRPmaq+ACRBMzjHc
-
-    - name: Tarea 14 - Etiquetar imagen del contenedor
-      command:
-        cmd: sudo podman tag localhost/webserver:latest maseiraacr.azurecr.io/webserver:casopractico2
-      become: yes
-      become_user: adminuser
-
-    - name: Tarea 15 - Subir imagen del contenedor al registro
-      command:
-        cmd: podman push maseiraacr.azurecr.io/webserver:casopractico2
-        chdir: "{{ ansible_user_dir }}/webserver"
-
-    - name: Tarea 16 - Crear contenedor del servicio web
-      command:
-        cmd: podman create --name web -p 8080:443 maseiraacr.azurecr.io/webserver:casopractico2
-
-    - name: Tarea 17 - Generar el archivo para gestionar el contenedor a través de systemd
-      template:
-        src: templates/container-web.service
-        dest: "/etc/systemd/system/container-web.service"
-        owner: adminuser
-        group: adminuser
-        mode: "0644"
-
-    - name: Tarea 18 - Recargar la configuración de systemd
-      systemd:
-        daemon_reload: yes
-
-    - name: Tarea 19 - Iniciar la aplicación web desde systemd
-      systemd:
-        name: container-web.service
-        enabled: yes
-        state: started

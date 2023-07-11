@@ -1,20 +1,63 @@
-- name: 'Despliegue de aplicación en AKS'
-  hosts: localhost
-  vars_files:
-    - vars/05_vars.yaml
-
+---
+- name: Configuración del servidor web con Podman y Ansible
+  hosts: podman_vm
+  become: yes
+  become_user: root
   tasks:
-    - name: 'Definir los objectos deployment y servicios'
-      template:
-        src: templates/stateless.j2
-        dest: "{{ directorio_trabajo }}/{{ aplicacion.definicion }}"
 
-    - name: 'Crear el namespace de trabajo'
-      kubernetes.core.k8s:
-        kind: Namespace
-        name: "{{ k8s_namespace }}"
+    - name: Tarea 12 - Generar imagen del contenedor
+      ansible.builtin.command:
+        cmd: podman build -t webserver -f /webserver/Containerfile /webserver
+      become: true
+      become_user: root
 
-    - name: 'Crear Deployments y servicios de la aplicación'
-      kubernetes.core.k8s:
-        state: present
-        template: "{{ directorio_trabajo }}/{{ aplicacion.definicion }}"
+    - name: Tarea 13 - Generar imagen del contenedor
+      ansible.builtin.command:
+        cmd: podman tag localhost/webserver:latest maseiraacr.azurecr.io/webserver:casopractico2
+      become: true
+      become_user: root
+
+    - name: Tarea 14 - Iniciar sesión en el registro de contenedores
+      ansible.builtin.command:
+        cmd: podman login maseiraacr.azurecr.io -u maseiraACR -p B1uRsxNeW7myw1gTj26yaHPRfDyJiirWsBHUJRPmaq+ACRBMzjHc
+      become: true
+      become_user: root
+
+    - name: Tarea 15 - Subir imagen del contenedor al registro
+      ansible.builtin.command:
+        cmd: podman push maseiraacr.azurecr.io/webserver:casopractico2
+      become: true
+      become_user: root
+
+    - name: Tarea 16 - Crear contenedor
+      ansible.builtin.command:
+        cmd: podman create --name web -p 8080:443 maseiraacr.azurecr.io/webserver:casopractico2
+      become: true
+      become_user: root
+
+    - name: Tarea 17 - Generar los ficheros para gestionar el contenedor a través de systemd
+      ansible.builtin.command:
+        cmd: podman generate systemd --new --files --name web
+      become: true
+      become_user: root
+
+    - name: Tarea 18 - Copiar los ficheros generados en el paso previo al directorio de systemd
+      ansible.builtin.command:
+        cmd: cp -Z container-web.service /etc/systemd/system/
+
+      become: true
+      become_user: root
+
+    - name: Tarea 19 - Recargar configuración de systemd
+      ansible.builtin.systemd:
+        daemon_reload: yes
+      become: true
+      become_user: root
+
+    - name: Tarea 20 - Habilitar y activar servicio de contenedor
+      ansible.builtin.systemd:
+        name: container-web.service
+        enabled: yes
+        state: started
+      become: true
+      become_user: root
