@@ -58,8 +58,8 @@
         provider: selfsigned
 
     - name: Tarea 8 - Definir página principal del servidor web
-      copy:
-        content: "<p>Web Server protegido por X509 y log por usuario y password</p>"
+      template:
+        src: templates/index.html
         dest: "{{ ansible_user_dir }}/webserver/index.html"
         owner: adminuser
         group: adminuser
@@ -74,12 +74,8 @@
         mode: "0644"
 
     - name: Tarea 10 - Definir configuración de autenticación básica
-      copy:
-        content: |
-          AuthType Basic
-          AuthName "Restricted Content"
-          AuthUserFile /usr/local/apache2/.cred
-          Require valid-user
+      template:
+        src: templates/.htaccess.j2
         dest: "{{ ansible_user_dir }}/webserver/.htaccess"
         owner: adminuser
         group: adminuser
