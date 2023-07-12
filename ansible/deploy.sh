@@ -11,6 +11,6 @@ ssh-keyscan -H 20.0.224.27 >> ~/.ssh/known_hosts
 
 
 # Lista de playbooks a ejecutar para la VM con Podman
-ansible-playbook -i hosts.txt 00_playbook.yaml --extra-vars "@vars.yaml"
-ansible-playbook -i hosts.txt 01_playbook.yaml --extra-vars "@vars.yaml"
-ansible-playbook -i hosts.txt 02_playbook.yaml --extra-vars "@vars.yaml"
+ansible-playbook -i hosts.txt 00_playbook.yml --extra-vars "@vars.yaml"
+ansible-playbook -i hosts.txt 01_playbook.yml --extra-vars "@vars.yaml"
+ansible-playbook -i hosts.txt 02_playbook.yml --extra-vars "@vars.yaml"
