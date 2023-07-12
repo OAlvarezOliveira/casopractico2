@@ -1,0 +1,78 @@
+---
+- name: Desplegar Grafana en AKS
+  hosts: podman_vm
+  gather_facts: no
+  tasks:
+
+    - name: Tarea 1 - Obtener las credenciales del cluster AKS
+      azure_rm_kubernetescluster_info:
+        resource_group: "{{ azurerm_resource_group.acr_rg.name }}"
+        name: "aks_cluster_kubernetes"
+        client_id: "{{ azure_client_id }}"
+        tenant: "{{ azure_tenant_id }}"
+      register: cluster_info
+
+    - name: Tarea 2 - Configurar kubectl con las credenciales del cluster AKS
+      copy:
+        content: "{{ cluster_info.kube_config_raw }}"
+        dest: ~/.kube/config
+        mode: 0600
+
+    - name: Tarea 3 - Instalar el paquete 'kubectl'
+      package:
+        name: kubectl
+        state: present
+
+    - name: Tarea 4 - Desplegar Grafana en AKS
+      k8s:
+        name: grafana
+        state: present
+        namespace: default
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: grafana
+            labels:
+              app: grafana
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: grafana
+            template:
+              metadata:
+                labels:
+                  app: grafana
+              spec:
+                containers:
+                  - name: grafana
+                    image: my-azure-registry/grafana:latest
+                    ports:
+                      - containerPort: 3000
+                    volumeMounts:
+                      - name: grafana-storage
+                        mountPath: /var/lib/grafana
+                volumes:
+                  - name: grafana-storage
+                    persistentVolumeClaim:
+                      claimName: grafana-pvc
+
+    - name: Tarea 5 - Exponer servicio de Grafana en AKS
+      k8s:
+        name: grafana-service
+        state: present
+        namespace: default
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: grafana-service
+          spec:
+            type: LoadBalancer
+            ports:
+              - protocol: TCP
+                port: 80
+                targetPort: 3000
+            selector:
+              app: grafana
