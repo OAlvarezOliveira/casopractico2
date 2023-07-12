@@ -1,22 +1,18 @@
-output "acr_admin_pass" {
+output "registry_acr" {
   value     = azurerm_container_registry.acr.admin_password
   sensitive = true
 }
 
-output "acr_admin_user" {
+output "registry_username" {
   value = azurerm_container_registry.acr.admin_username
   sensitive = true
 }
 
-output "acr_login_server" {
+output "registry_acr" {
   value = azurerm_container_registry.acr.login_server
 }
 
-output "ssh_user" {
-  value = azurerm_linux_virtual_machine.vm.admin_username
-}
-
-output "vm_public_ip" {
+output "podman_vm" {
   value = azurerm_public_ip.public_ip.ip_address
 }
 

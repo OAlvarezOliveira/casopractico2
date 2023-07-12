@@ -12,25 +12,25 @@
 
     - name: Tarea 13 - Generar imagen del contenedor
       ansible.builtin.command:
-        cmd: podman tag localhost/webserver:latest maseiraacr.azurecr.io/webserver:casopractico2
+        cmd: podman tag localhost/webserver:latest "{{ registry_acr }}/webserver:casopractico2"
       become: true
       become_user: root
 
     - name: Tarea 14 - Iniciar sesión en el registro de contenedores
       ansible.builtin.command:
-        cmd: podman login maseiraacr.azurecr.io -u maseiraACR -p B1uRsxNeW7myw1gTj26yaHPRfDyJiirWsBHUJRPmaq+ACRBMzjHc
+        cmd: podman login "{{ registry_acr }}" -u "{{ registry_username }}" -p "{{ registry_password }}"
       become: true
       become_user: root
 
     - name: Tarea 15 - Subir imagen del contenedor al registro
       ansible.builtin.command:
-        cmd: podman push maseiraacr.azurecr.io/webserver:casopractico2
+        cmd: podman push "{{ registry_acr }}/webserver:casopractico2"
       become: true
       become_user: root
 
     - name: Tarea 16 - Crear contenedor
       ansible.builtin.command:
-        cmd: podman create --name web -p 8080:443 maseiraacr.azurecr.io/webserver:casopractico2
+        cmd: podman create --name web -p 8080:443 "{{ registry_acr }}/webserver:casopractico2"
       become: true
       become_user: root
 
@@ -43,7 +43,6 @@
     - name: Tarea 18 - Copiar los ficheros generados en el paso previo al directorio de systemd
       ansible.builtin.command:
         cmd: cp -Z container-web.service /etc/systemd/system/
-
       become: true
       become_user: root
 
