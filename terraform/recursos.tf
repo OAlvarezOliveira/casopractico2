@@ -9,7 +9,7 @@ resource "azurerm_resource_group" "acr_rg" {
 # Crear la red virtual después de que se haya creado el grupo de recursos
 resource "azurerm_virtual_network" "vnet" {
   depends_on          = [azurerm_resource_group.acr_rg]
-  name                = "cp2_vnet"
+  name                = "vnet"
   address_space       = ["10.0.0.0/16"]
   location            = var.location_name
   resource_group_name = azurerm_resource_group.acr_rg.name
@@ -36,7 +36,7 @@ resource "azurerm_container_registry" "acr" {
 
 # Interfaz de red para PodmanVM
 resource "azurerm_network_interface" "nic_podman_vm" {
-  name                = "nic_podman_vm"
+  name                = "podmanVM_nic"
   location            = azurerm_resource_group.acr_rg.location
   resource_group_name = azurerm_resource_group.acr_rg.name
 
@@ -52,7 +52,7 @@ resource "azurerm_network_interface" "nic_podman_vm" {
 
 # Dirección IP pública para PodmanVM
 resource "azurerm_public_ip" "public_ip_podman_vm" {
-  name                = "public_ip_podman_vm"
+  name                = "podmanVM_public_ip"
   resource_group_name = azurerm_resource_group.acr_rg.name
   location            = azurerm_resource_group.acr_rg.location
   allocation_method   = "Static"
@@ -97,7 +97,7 @@ resource "azurerm_linux_virtual_machine" "vm_podman_vm" {
 
 # Interfaz de red para workerVM
 resource "azurerm_network_interface" "nic_worker_vm" {
-  name                = "nic_worker_vm"
+  name                = "workerVM_nic"
   location            = azurerm_resource_group.acr_rg.location
   resource_group_name = azurerm_resource_group.acr_rg.name
 
@@ -113,7 +113,7 @@ resource "azurerm_network_interface" "nic_worker_vm" {
 
 # Dirección IP pública para workerVM
 resource "azurerm_public_ip" "public_ip_worker_vm" {
-  name                = "public_ip_worker_vm"
+  name                = "workerVM_public_ip"
   resource_group_name = azurerm_resource_group.acr_rg.name
   location            = azurerm_resource_group.acr_rg.location
   allocation_method   = "Static"
