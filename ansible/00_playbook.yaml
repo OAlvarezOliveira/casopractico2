@@ -5,7 +5,7 @@
   become_user: root
   tasks:
     - name: Tarea 1 - Instalar herramientas requeridas
-      package:
+      ansible.builtin.yum:
         name:
           - podman
           - skopeo
@@ -15,12 +15,12 @@
         state: present
 
     - name: Tarea 2 - Instalar módulo passlib
-      pip:
+      ansible.builtin.pip:
         name: passlib
         state: present
 
     - name: Tarea 3 - Crear directorio de trabajo
-      file:
+      ansible.builtin.file:
         path: "/webserver"
         state: directory
         owner: root

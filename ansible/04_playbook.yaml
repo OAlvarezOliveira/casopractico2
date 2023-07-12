@@ -1,33 +1,5 @@
----
-- name: Desplegar Grafana en AKS
-  hosts: podman_vm
-  gather_facts: no
-  tasks:
-
-    - name: Tarea 1 - Obtener las credenciales del cluster AKS
-      azure_rm_kubernetescluster_info:
-        resource_group: "{{ azurerm_resource_group.acr_rg.name }}"
-        name: "aks_cluster_kubernetes"
-        client_id: "{{ azure_client_id }}"
-        tenant: "{{ azure_tenant_id }}"
-      register: cluster_info
-
-    - name: Tarea 2 - Configurar kubectl con las credenciales del cluster AKS
-      copy:
-        content: "{{ cluster_info.kube_config_raw }}"
-        dest: ~/.kube/config
-        mode: 0600
-
-    - name: Tarea 3 - Instalar el paquete 'kubectl'
-      package:
-        name: kubectl
-        state: present
-
-    - name: Tarea 4 - Desplegar Grafana en AKS
-      k8s:
-        name: grafana
-        state: present
-        namespace: default
+    - name: Tarea 7 - Desplegar Grafana en AKS
+      kubernetes.core.k8s:
         definition:
           apiVersion: apps/v1
           kind: Deployment
@@ -47,7 +19,7 @@
               spec:
                 containers:
                   - name: grafana
-                    image: my-azure-registry/grafana:latest
+                    image: "{{ registry_acr }}/grafana:casopractico2"
                     ports:
                       - containerPort: 3000
                     volumeMounts:
@@ -58,11 +30,8 @@
                     persistentVolumeClaim:
                       claimName: grafana-pvc
 
-    - name: Tarea 5 - Exponer servicio de Grafana en AKS
-      k8s:
-        name: grafana-service
-        state: present
-        namespace: default
+    - name: Tarea 8 - Exponer servicio de Grafana en AKS
+      kubernetes.core.k8s:
         definition:
           apiVersion: v1
           kind: Service

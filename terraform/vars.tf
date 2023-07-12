@@ -4,7 +4,8 @@ variable "resource_group_name" {
   type        = string
   default     = "cp2_resource_group"
 }
-# Establecer el ubicación del grupo de recursos
+
+# Establecer la ubicación del grupo de recursos
 variable "location_name" {
   description = "Azure region where resources will be created"
   type        = string
