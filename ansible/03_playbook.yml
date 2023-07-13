@@ -1,135 +1,31 @@
 ---
-- name: Configurar y desplegar en AKS
+- name: Crear Imagenes y subirlas al registry para AKS
   hosts: localhost
   gather_facts: no
 
   tasks:
-    - name: Obtener credenciales del clúster de AKS
-      azure.azcollection.azure_rm_aks_info:
-        resource_group: "{{ var.resource_group_name }}"
-        name: "aks_cluster_kubernetes"
-        kubeconfig_path: "/path/to/kubeconfig.yaml"
-      register: aks_info
+    - name: Descargar imágenes desde el repositorio público de Microsoft
+      ansible.builtin.command: >
+        docker pull mcr.microsoft.com/oss/bitnami/redis:6.0.8 &&
+        docker pull mcr.microsoft.com/azuredocs/azure-vote-front:v1
+      become: true
 
-    - name: Crear namespace en el clúster de AKS
-      k8s:
-        kubeconfig: "/path/to/kubeconfig.yaml"
+    - name: Etiquetar imágenes descargadas
+      ansible.builtin.command: >
+        docker tag mcr.microsoft.com/oss/bitnami/redis:6.0.8 {{ registry_acr }}/redis:6.0.8:casopractico2 &&
+        docker tag mcr.microsoft.com/azuredocs/azure-vote-front:v1 {{ registry_acr }}/azure-vote-front_v1:casopractico2
+      become: true
+
+    - name: Iniciar sesión en el registro de contenedores de Azure
+      azure_rm_containerregistry:
+        resource_group: cp2_resource_group
+        name: {{ registry_acr }}
         state: present
-        definition:
-          apiVersion: v1
-          kind: Namespace
-          metadata:
-            name: vote-namespace
+        username: {{ registry_username }}
+        password: {{ registry_password }}
 
-    - name: Aplicar manifiesto YAML en el clúster de AKS
-      k8s:
-        kubeconfig: "/path/to/kubeconfig.yaml"
-        state: present
-        src: "/path/to/your-manifest.yaml"
-        namespace: vote-namespace
-
-- name: Create azure-vote-back Deployment
-  k8s:
-    api_version: apps/v1
-    kind: Deployment
-    namespace: vote-namespace
-    name: azure-vote-back
-    state: present
-    definition:
-      metadata:
-        name: azure-vote-back
-      spec:
-        replicas: 1
-        selector:
-          matchLabels:
-            app: azure-vote-back
-        template:
-          metadata:
-            labels:
-              app: azure-vote-back
-          spec:
-            nodeSelector:
-              "kubernetes.io/os": linux
-            containers:
-              - name: azure-vote-back
-                image: mcr.microsoft.com/oss/bitnami/redis:6.0.8
-                env:
-                  - name: ALLOW_EMPTY_PASSWORD
-                    value: "yes"
-                resources:
-                  requests:
-                    cpu: 100m
-                    memory: 128Mi
-                  limits:
-                    cpu: 250m
-                    memory: 256Mi
-                ports:
-                  - containerPort: 6379
-                    name: redis
-
-- name: Create azure-vote-back Service
-  k8s:
-    api_version: v1
-    kind: Service
-    namespace: vote-namespace
-    name: azure-vote-back
-    state: present
-    definition:
-      spec:
-        ports:
-          - port: 6379
-        selector:
-          app: azure-vote-back
-
-- name: Create azure-vote-front Deployment
-  k8s:
-    api_version: apps/v1
-    kind: Deployment
-    namespace: vote-namespace
-    name: azure-vote-front
-    state: present
-    definition:
-      metadata:
-        name: azure-vote-front
-      spec:
-        replicas: 1
-        selector:
-          matchLabels:
-            app: azure-vote-front
-        template:
-          metadata:
-            labels:
-              app: azure-vote-front
-          spec:
-            nodeSelector:
-              "kubernetes.io/os": linux
-            containers:
-              - name: azure-vote-front
-                image: mcr.microsoft.com/azuredocs/azure-vote-front:v1
-                resources:
-                  requests:
-                    cpu: 100m
-                    memory: 128Mi
-                  limits:
-                    cpu: 250m
-                    memory: 256Mi
-                ports:
-                  - containerPort: 80
-                env:
-                  - name: REDIS
-                    value: "azure-vote-back"
-
-- name: Create azure-vote-front Service
-  k8s:
-    api_version: v1
-    kind: Service
-    namespace: vote-namespace
-    name: azure-vote-front
-    state: present
-    definition:
-      spec:
-        type: LoadBalancer
-        ports:
-          - port: 80
-        selector:
-          app: azure-vote-front
+    - name: Subir imágenes al registro de contenedores de Azure
+      ansible.builtin.command: >
+        docker push {{ registry_acr }}/redis:6.0.8-casopractico2 &&
+        docker push {{ registry_acr }}/azure-vote-front_v1:casopractico2
+      become: true

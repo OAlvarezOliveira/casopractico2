@@ -1,0 +1,22 @@
+---
+- name: Configurar y desplegar en AKS
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Crear namespace en el clúster de AKS
+      k8s:
+        kubeconfig: kubeconfig.yaml
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: azurevote-redis
+
+    - name: Aplicar manifiesto YAML en el clúster de AKS
+      k8s:
+        kubeconfig: kubeconfig.yaml
+        state: present
+        src: manifest.yaml
+        namespace: azurevote-redis
