@@ -1,60 +1,135 @@
 ---
-- name: Desplegar Grafana en AKS
-  hosts: aks_worker
+- name: Configurar y desplegar en AKS
+  hosts: localhost
   gather_facts: no
+
   tasks:
-
-    - name: Tarea 0 - Instalar herramientas requeridas en el worker
-      ansible.builtin.yum:
-        name:
-          - podman
-          - kubectl
-        state: present
-      become: true
-      become_user: root
-
-    - name: Tarea 1 - Crear directorio de trabajo en el worker
-      ansible.builtin.file:
-        path: "/grafana"
-        state: directory
-        owner: root
-        group: root
-        mode: "0775"
-      become: true
-      become_user: root
-
-    - name: Tarea 2 - Obtener las credenciales del cluster AKS
-      azure_rm_kubernetescluster_info:
-        resource_group: "{{ azurerm_resource_group.acr_rg.name }}"
+    - name: Obtener credenciales del clúster de AKS
+      azure.azcollection.azure_rm_aks_info:
+        resource_group: "{{ var.resource_group_name }}"
         name: "aks_cluster_kubernetes"
-        client_id: "{{ azure_client_id }}"
-        tenant: "{{ azure_tenant_id }}"
-      register: cluster_info
+        kubeconfig_path: "/path/to/kubeconfig.yaml"
+      register: aks_info
 
-    - name: Tarea 3 - Configurar kubectl con las credenciales del cluster AKS
-      ansible.builtin.copy:
-        content: "{{ cluster_info.kube_config_raw }}"
-        dest: ~/.kube/config
-        mode: "0600"
+    - name: Crear namespace en el clúster de AKS
+      k8s:
+        kubeconfig: "/path/to/kubeconfig.yaml"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: vote-namespace
 
-    - name: Tarea 4 - Descargar imagen de Grafana y hacer el tag
-      ansible.builtin.command:
-        cmd: podman pull grafana:latest && podman tag grafana:latest "{{ registry_acr }}/grafana:casopractico2"
-      become: true
-      become_user: root
+    - name: Aplicar manifiesto YAML en el clúster de AKS
+      k8s:
+        kubeconfig: "/path/to/kubeconfig.yaml"
+        state: present
+        src: "/path/to/your-manifest.yaml"
+        namespace: vote-namespace
 
-    - name: Tarea 5 - Iniciar sesión en el registro de contenedores
-      containers.podman.podman_login:
-        registry: "{{ registry_acr }}"
-        username: "{{ registry_username }}"
-        password: "{{ registry_password }}"
-      become: true
-      become_user: root
+- name: Create azure-vote-back Deployment
+  k8s:
+    api_version: apps/v1
+    kind: Deployment
+    namespace: vote-namespace
+    name: azure-vote-back
+    state: present
+    definition:
+      metadata:
+        name: azure-vote-back
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: azure-vote-back
+        template:
+          metadata:
+            labels:
+              app: azure-vote-back
+          spec:
+            nodeSelector:
+              "kubernetes.io/os": linux
+            containers:
+              - name: azure-vote-back
+                image: mcr.microsoft.com/oss/bitnami/redis:6.0.8
+                env:
+                  - name: ALLOW_EMPTY_PASSWORD
+                    value: "yes"
+                resources:
+                  requests:
+                    cpu: 100m
+                    memory: 128Mi
+                  limits:
+                    cpu: 250m
+                    memory: 256Mi
+                ports:
+                  - containerPort: 6379
+                    name: redis
 
-    - name: Tarea 6 - Subir imagen del contenedor al registro
-      containers.podman.podman_image:
-        name: "{{ registry_acr }}/grafana:casopractico2"
-        push: true
-      become: true
-      become_user: root
+- name: Create azure-vote-back Service
+  k8s:
+    api_version: v1
+    kind: Service
+    namespace: vote-namespace
+    name: azure-vote-back
+    state: present
+    definition:
+      spec:
+        ports:
+          - port: 6379
+        selector:
+          app: azure-vote-back
 
+- name: Create azure-vote-front Deployment
+  k8s:
+    api_version: apps/v1
+    kind: Deployment
+    namespace: vote-namespace
+    name: azure-vote-front
+    state: present
+    definition:
+      metadata:
+        name: azure-vote-front
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: azure-vote-front
+        template:
+          metadata:
+            labels:
+              app: azure-vote-front
+          spec:
+            nodeSelector:
+              "kubernetes.io/os": linux
+            containers:
+              - name: azure-vote-front
+                image: mcr.microsoft.com/azuredocs/azure-vote-front:v1
+                resources:
+                  requests:
+                    cpu: 100m
+                    memory: 128Mi
+                  limits:
+                    cpu: 250m
+                    memory: 256Mi
+                ports:
+                  - containerPort: 80
+                env:
+                  - name: REDIS
+                    value: "azure-vote-back"
+
+- name: Create azure-vote-front Service
+  k8s:
+    api_version: v1
+    kind: Service
+    namespace: vote-namespace
+    name: azure-vote-front
+    state: present
+    definition:
+      spec:
+        type: LoadBalancer
+        ports:
+          - port: 80
+        selector:
+          app: azure-vote-front

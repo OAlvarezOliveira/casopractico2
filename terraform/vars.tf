@@ -11,3 +11,10 @@ variable "location_name" {
   type        = string
   default     = "uksouth"
 }
+
+# Establecer num del nodes del pool 
+variable "node_count" {
+  type        = number
+  description = "The initial quantity of nodes for the node pool."
+  default     = 1
+}
