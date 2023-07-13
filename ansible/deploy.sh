@@ -8,10 +8,10 @@ ssh-keyscan -H 20.68.151.93 >> ~/.ssh/known_hosts
 
 
 # Lista de playbooks a ejecutar para la VM con Podman
-ansible-playbook -i hosts.txt 00_playbook.yml --extra-vars "@vars.yaml"
-ansible-playbook -i hosts.txt 01_playbook.yml --extra-vars "@vars.yaml"
-ansible-playbook -i hosts.txt 02_playbook.yml --extra-vars "@vars.yaml"
+ansible-playbook -i hosts.txt 00_playbook.yml --extra-vars "@vars.yml"
+ansible-playbook -i hosts.txt 01_playbook.yml --extra-vars "@vars.yml"
+ansible-playbook -i hosts.txt 02_playbook.yml --extra-vars "@vars.yml"
 
 # Lista de playbooks a ejecutar para la AzureVote con Redis
- ansible-playbook -i hosts.txt 03_playbook.yml --extra-vars "@vars.yaml"  
- ansible-playbook -i hosts.txt 04_playbook.yml --extra-vars "@vars.yaml" 
+ ansible-playbook -i hosts.txt 03_playbook.yml --extra-vars "@vars.yml"  
+ ansible-playbook -i hosts.txt 04_playbook.yml --extra-vars "@vars.yml" 
