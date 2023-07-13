@@ -4,28 +4,37 @@
   gather_facts: no
 
   tasks:
-    - name: Descargar imágenes desde el repositorio público de Microsoft
-      ansible.builtin.command: >
-        docker pull mcr.microsoft.com/oss/bitnami/redis:6.0.8 &&
-        docker pull mcr.microsoft.com/azuredocs/azure-vote-front:v1
+    - name: Tarea 1 - Descargar imagen Redis desde el repositorio público de Microsoft
+      ansible.builtin.command: podman pull mcr.microsoft.com/oss/bitnami/redis:6.0.8
       become: true
+      become_user: root
 
-    - name: Etiquetar imágenes descargadas
-      ansible.builtin.command: >
-        docker tag mcr.microsoft.com/oss/bitnami/redis:6.0.8 {{ registry_acr }}/redis:6.0.8:casopractico2 &&
-        docker tag mcr.microsoft.com/azuredocs/azure-vote-front:v1 {{ registry_acr }}/azure-vote-front_v1:casopractico2
+    - name: Tarea 2 - Descargar imagen Azure Vote Front desde el repositorio público de Microsoft
+      ansible.builtin.command: podman pull mcr.microsoft.com/azuredocs/azure-vote-front:v1
       become: true
+      become_user: root
 
-    - name: Iniciar sesión en el registro de contenedores de Azure
-      azure_rm_containerregistry:
-        resource_group: cp2_resource_group
-        name: {{ registry_acr }}
-        state: present
-        username: {{ registry_username }}
-        password: {{ registry_password }}
+    - name: Tarea 3 - Etiquetar imagen Redis descargada
+      ansible.builtin.command: podman tag mcr.microsoft.com/oss/bitnami/redis:6.0.8 "{{ registry_acr }}/redis:casopractico2"
+      become: true
+      become_user: root
 
-    - name: Subir imágenes al registro de contenedores de Azure
-      ansible.builtin.command: >
-        docker push {{ registry_acr }}/redis:6.0.8-casopractico2 &&
-        docker push {{ registry_acr }}/azure-vote-front_v1:casopractico2
+    - name: Tarea 4 - Etiquetar imagen Azure Vote Front descargada
+      ansible.builtin.command: podman tag mcr.microsoft.com/azuredocs/azure-vote-front:v1 "{{ registry_acr }}/azurevote:casopractico2"
+      become: true
+      become_user: root
+
+    - name: Tarea 5 - Iniciar sesión en el registro de contenedores
+      ansible.builtin.command:
+        cmd: podman login "{{ registry_acr }}" -u "{{ registry_username }}" -p "{{ registry_password }}"
+      become: true
+      become_user: root
+
+    - name: Tarea 6 - Subir imagen Redis etiquetada al registro de contenedores de Azure
+      ansible.builtin.command: podman push "{{ registry_acr }}/redis:casopractico2"
+      become: true
+      become_user: root
+
+    - name: Tarea 7 - Subir imagen Azure Vote Front etiquetada al registro de contenedores de Azure
+      ansible.builtin.command: podman push "{{ registry_acr }}/azurevote:casopractico2"
       become: true

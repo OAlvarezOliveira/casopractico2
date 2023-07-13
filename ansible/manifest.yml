@@ -24,7 +24,7 @@ spec:
         "kubernetes.io/os": linux
       containers:
         - name: azure-vote-back
-          image: mcr.microsoft.com/oss/bitnami/redis:6.0.8
+          image: maseiraacr.azurecr.io/redis:casopractico2
           env:
             - name: ALLOW_EMPTY_PASSWORD
               value: "yes"
@@ -71,7 +71,7 @@ spec:
         "kubernetes.io/os": linux
       containers:
         - name: azure-vote-front
-          image: mcr.microsoft.com/azuredocs/azure-vote-front:v1
+          image: maseiraacr.azurecr.io/azurevote:casopractico2
           resources:
             requests:
               cpu: 100m

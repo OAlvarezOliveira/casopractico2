@@ -5,18 +5,15 @@
 
   tasks:
     - name: Crear namespace en el clúster de AKS
-      k8s:
+      kubernetes.core.k8s:
         kubeconfig: kubeconfig.yaml
+        kind: Namespace
+        name: azurevote-redis
         state: present
-        definition:
-          apiVersion: v1
-          kind: Namespace
-          metadata:
-            name: azurevote-redis
 
     - name: Aplicar manifiesto YAML en el clúster de AKS
-      k8s:
+      kubernetes.core.k8s:
         kubeconfig: kubeconfig.yaml
-        state: present
-        src: manifest.yaml
+        src: manifest.yml
         namespace: azurevote-redis
+        state: present
