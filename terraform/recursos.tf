@@ -22,7 +22,7 @@ resource "azurerm_subnet" "subnet" {
   address_prefixes     = ["10.0.0.0/24"]
 }
 
-# Registro de contenedores de Azure utilizando el servicio ACR acceso público y autenticación
+# Registro de contenedores de Azure utilizando el servicio ACR con acceso público y autenticación
 resource "azurerm_container_registry" "acr" {
   name                = "maseiraacr"
   resource_group_name = azurerm_resource_group.acr_rg.name
@@ -30,8 +30,6 @@ resource "azurerm_container_registry" "acr" {
   sku                 = "Basic"
   admin_enabled       = true
 }
-
-
 
 # Sección PodmanVM
 # Interfaz de red para PodmanVM
@@ -44,8 +42,7 @@ resource "azurerm_network_interface" "nic_podman_vm" {
     name                          = "config"
     subnet_id                     = azurerm_subnet.subnet.id
     private_ip_address_allocation = "Dynamic"
-
-    # Asociar la dirección IP pública a la interfaz de red
+    
     public_ip_address_id = azurerm_public_ip.public_ip_podman_vm.id
   }
 }
@@ -65,6 +62,7 @@ resource "azurerm_linux_virtual_machine" "vm_podman_vm" {
   resource_group_name = azurerm_resource_group.acr_rg.name
   size                = "Standard_DS1_v2"
   admin_username      = "adminuser"
+  
   admin_ssh_key {
     username   = "adminuser"
     public_key = file("/home/server_admin/.ssh/id_rsa.pub")
@@ -110,17 +108,15 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     vm_size    = "Standard_D2_v2"
     node_count = var.node_count
   }
+}
 
-  linux_profile {
-    admin_username = "adminuser"
+# Conceder el rol ACR pull a la identidad de AKS
+data "azurerm_role_definition" "acr_pull" {
+  name = "AcrPull"
+}
 
-    ssh_key {
-      key_data = file("/home/server_admin/.ssh/id_rsa.pub")
-    }
-  }
-
-  network_profile {
-    network_plugin    = "kubenet"
-    load_balancer_sku = "standard"
-  }
+resource "azurerm_role_assignment" "acr_role_assignment" {
+  scope              = azurerm_container_registry.acr.id
+  role_definition_id = data.azurerm_role_definition.acr_pull.id
+  principal_id       = azurerm_kubernetes_cluster.aks_cluster.identity[0].principal_id
 }
