@@ -110,13 +110,14 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   }
 }
 
-# Conceder el rol ACR pull a la identidad de AKS
-data "azurerm_role_definition" "acr_pull" {
-  name = "AcrPull"
+# Obtener el ID del rol "Contributor"
+data "azurerm_role_definition" "contributor" {
+  name = "Contributor"
 }
 
+# Asignar el rol "Contributor" al clúster AKS en el ámbito del ACR
 resource "azurerm_role_assignment" "acr_role_assignment" {
-  scope              = azurerm_container_registry.acr.id
-  role_definition_id = data.azurerm_role_definition.acr_pull.id
-  principal_id       = azurerm_kubernetes_cluster.aks_cluster.identity[0].principal_id
+  scope                = azurerm_container_registry.acr.id
+  role_definition_name = data.azurerm_role_definition.contributor.name
+  principal_id         = azurerm_kubernetes_cluster.aks_cluster.identity[0].principal_id
 }
