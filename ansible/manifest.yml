@@ -25,6 +25,7 @@ spec:
       containers:
         - name: azure-vote-back
           image: maseiraacr.azurecr.io/redis:casopractico2
+          imagePullPolicy: Always
           env:
             - name: ALLOW_EMPTY_PASSWORD
               value: "yes"
@@ -72,6 +73,7 @@ spec:
       containers:
         - name: azure-vote-front
           image: maseiraacr.azurecr.io/azurevote:casopractico2
+          imagePullPolicy: Always
           resources:
             requests:
               cpu: 100m
