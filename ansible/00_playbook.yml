@@ -34,7 +34,7 @@
         password: mentolin
         owner: root
         group: root
-        mode: "0644"
+        mode: "0600"
 
     - name: Tarea 5 - Generar certificado autofirmado
       community.crypto.openssl_privatekey:
@@ -57,7 +57,7 @@
           CN: vm1
         owner: root
         group: root
-        mode: "0644"
+        mode: "0600"
 
     - name: Tarea 7 - Crear certificado autofirmado
       community.crypto.x509_certificate:
@@ -67,4 +67,4 @@
         provider: selfsigned
         owner: root
         group: root
-        mode: "0644"
+        mode: "0600"
