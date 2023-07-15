@@ -1,0 +1,56 @@
+- name: Crear Imagenes y subirlas al registry para AKS
+  hosts: localhost
+  gather_facts: no
+  become: true
+  become_user: root
+
+  tasks:
+    - name: Tarea 1 - Descargar imagen Redis desde el repositorio público de Microsoft
+      ansible.builtin.command: podman pull mcr.microsoft.com/oss/bitnami/redis:6.0.8
+      become: true
+      become_user: root
+
+    - name: Tarea 2 - Descargar imagen Azure Vote Front desde el repositorio público de Microsoft
+      ansible.builtin.command: podman pull mcr.microsoft.com/azuredocs/azure-vote-front:v1
+      become: true
+      become_user: root
+
+    - name: Tarea 3 - Etiquetar imagen Redis descargada
+      ansible.builtin.command: podman tag mcr.microsoft.com/oss/bitnami/redis:6.0.8 "{{ registry_acr }}/redis:casopractico2"
+      become: true
+      become_user: root
+
+    - name: Tarea 4 - Etiquetar imagen Azure Vote Front descargada
+      ansible.builtin.command: podman tag mcr.microsoft.com/azuredocs/azure-vote-front:v1 "{{ registry_acr }}/azurevote:casopractico2"
+      become: true
+      become_user: root
+
+    - name: Tarea 5 - Crear namespace en el clúster de AKS
+      kubernetes.core.k8s:
+        kubeconfig: kubeconfig.yaml
+        kind: Namespace
+        name: azurevote-redis
+        state: present
+
+    - name: Tarea 8 - Iniciar sesión en el registro de contenedores
+      ansible.builtin.command:
+        cmd: podman login "{{ registry_acr }}" -u "{{ registry_username }}" -p "{{ registry_password }}"
+      become: true
+      become_user: root
+
+    - name: Tarea 9 - Subir imagen Redis etiquetada al registro de contenedores de Azure
+      ansible.builtin.command: podman push "{{ registry_acr }}/redis:casopractico2"
+      become: true
+      become_user: root
+
+    - name: Tarea 10 - Subir imagen Azure Vote Front etiquetada al registro de contenedores de Azure
+      ansible.builtin.command: podman push "{{ registry_acr }}/azurevote:casopractico2"
+      become: true
+      become_user: root
+
+    - name: Tarea 11 - Aplicar manifiesto YAML en el clúster de AKS
+      kubernetes.core.k8s:
+        kubeconfig: kubeconfig.yaml
+        src: manifest.yml
+        namespace: azurevote-redis
+        state: present

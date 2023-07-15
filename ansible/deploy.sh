@@ -20,10 +20,7 @@ ansible-playbook -i hosts.txt 00_playbook.yml --extra-vars "@vars.yml"
 ansible-playbook -i hosts.txt 01_playbook.yml --extra-vars "@vars.yml"
 ansible-playbook -i hosts.txt 02_playbook.yml --extra-vars "@vars.yml"
 
-# Adjunta el ACR al clúster AKS 
-az aks update -n aks_cluster_kubernetes -g cp2_resource_group --attach-acr maseiraacr
-
-
 # Lista de playbooks a ejecutar para la AzureVote con Redis
 ansible-playbook -i hosts.txt 03_playbook.yml --extra-vars "@vars.yml"
+ansible-playbook -i hosts.txt 04_playbook.yml --extra-vars "@vars.yml"
 
