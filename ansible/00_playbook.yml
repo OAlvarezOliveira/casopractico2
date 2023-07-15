@@ -25,7 +25,7 @@
         state: directory
         owner: root
         group: root
-        mode: "0775"
+        mode: "0700"
 
     - name: Tarea 4 - Crear archivo de credenciales
       community.general.htpasswd:
