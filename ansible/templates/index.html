@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Bienvenido al servidor web</title>
     <style>
         body {
@@ -8,9 +9,10 @@
             padding: 20px;
             max-width: 600px;
             margin: 0 auto;
+            color: #333;
         }
         h1 {
-            color: #333;
+            color: inherit;
         }
         p {
             line-height: 1.5;
@@ -24,14 +26,14 @@
 <body>
     <h1>Bienvenido al servidor web</h1>
     <p>Este servidor web ha sido configurado con Podman y Ansible.</p>
-    <p>A continuación se muestran algunas características del servidor:</p>
+    <p>A continuacion se muestran algunas caracteristicas del servidor:</p>
     <ul>
         <li>Se ha instalado y configurado el servidor web Apache HTTP Server (httpd).</li>
         <li>El servidor web utiliza un certificado autofirmado para conexiones seguras (HTTPS).</li>
-        <li>Se ha configurado la autenticación básica para proteger el acceso al servidor web.</li>
+        <li>Se ha configurado la autenticacion basica para proteger el acceso al servidor web.</li>
         <li>Se ha generado una imagen del contenedor con todas las configuraciones que corre sobre Podman y se ha subido al registro de contenedores de Azure.</li>
-        <li>El contenedor del servicio web se gestiona a través de systemd para automatizar su puesta en marcha en caso de fallo o reinicio.</li>
+        <li>El contenedor del servicio web se gestiona a traves de systemd para automatizar su puesta en marcha en caso de fallo o reinicio.</li>
     </ul>
-    <p>Este servidor es parte del casopractico2 que estoy desarrollando para Unir</p>
+    <p>Este servidor es parte del casopractico2 que estoy desarrollando para Unir.</p>
 </body>
 </html>

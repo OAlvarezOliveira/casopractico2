@@ -1,22 +1,29 @@
 #!/bin/bash
 
 # Eliminar una clave de host específica del archivo known_hosts
-ssh-keygen -f "/home/server_admin/.ssh/known_hosts" -R "51.11.32.202"
+ssh-keygen -f "/home/server_admin/.ssh/known_hosts" -R "20.254.24.80"
 
-# Evitar la verificación del fingerprint al conectarte a ese host
-ssh-keyscan -H 51.11.32.202 >> ~/.ssh/known_hosts
+# Añade a known_hosts para evitar la verificación del fingerprint al conectarte a ese host
+ssh-keyscan -H 20.254.24.80 >> ~/.ssh/known_hosts
 
 # Asegurate de que ansible/kubeconfig.yaml es el correcto
-az aks get-credentials --resource-group cp2_resource_group --name aks_cluster_kubernetes --file /mnt/d/Minhasse/Documents/Proyectos/casopractico2/ansible/kubeconfig.yaml
+yes | az aks get-credentials --resource-group cp2_resource_group --name aks_cluster_kubernetes --file /mnt/d/Minhasse/Documents/Proyectos/casopractico2/ansible/kubeconfig.yaml --overwrite-existing
 
 # Asegurate de que ~/.kube/config es el correcto
-az aks get-credentials --resource-group cp2_resource_group --name aks_cluster_kubernetes --file  ~/.kube/config
+yes | az aks get-credentials --resource-group cp2_resource_group --name aks_cluster_kubernetes --file  ~/.kube/config --overwrite-existing
+
+# Verificar y ajustar los permisos del archivo kubeconfig
+chmod 600 ~/.kube/config
 
 # Lista de playbooks a ejecutar para la VM con Podman
 ansible-playbook -i hosts.txt 00_playbook.yml --extra-vars "@vars.yml"
 ansible-playbook -i hosts.txt 01_playbook.yml --extra-vars "@vars.yml"
 ansible-playbook -i hosts.txt 02_playbook.yml --extra-vars "@vars.yml"
 
+# Adjunta el ACR al clúster AKS 
+az aks update -n aks_cluster_kubernetes -g cp2_resource_group --attach-acr maseiraacr
+
+
 # Lista de playbooks a ejecutar para la AzureVote con Redis
-ansible-playbook -i hosts.txt 03_playbook.yml --extra-vars "@vars.yml"  
+ansible-playbook -i hosts.txt 03_playbook.yml --extra-vars "@vars.yml"
 
