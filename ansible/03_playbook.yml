@@ -1,7 +1,7 @@
-- name: Actualizar AKS y adjuntar ACR
+- name: Adjuntar ACR al AKS
   hosts: localhost
   tasks:
-    - name: Actualizar AKS y adjuntar ACR
+    - name: Tarea 0 - Adjuntar ACR al AKS
       shell: |
         az login --username "{{ lookup('env', 'AZURE_USERNAME') }}" \
           --password "{{ lookup('env', 'AZURE_PASSWORD') }}" \
