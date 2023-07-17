@@ -1,2 +1,2 @@
 [podman_vm]
-20.90.185.136 ansible_user=adminuser ansible_ssh_private_key_file=/home/server_admin/.ssh/id_rsa ansible_python_interpreter=/usr/bin/python3
+20.254.107.64 ansible_user=adminuser ansible_ssh_private_key_file=/home/server_admin/.ssh/id_rsa ansible_python_interpreter=/usr/bin/python3

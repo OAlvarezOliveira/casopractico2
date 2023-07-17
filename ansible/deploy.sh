@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Eliminar una clave de host específica del archivo known_hosts
-ssh-keygen -f "/home/server_admin/.ssh/known_hosts" -R "20.90.185.136"
+ssh-keygen -f "/home/server_admin/.ssh/known_hosts" -R "20.254.107.64"
 
 # Añade a known_hosts para evitar la verificación del fingerprint al conectarte a ese host
-ssh-keyscan -H 20.90.185.136 >> ~/.ssh/known_hosts
+ssh-keyscan -H 20.254.107.64 >> ~/.ssh/known_hosts
 
 # Asegurate de que ansible/kubeconfig.yaml es el correcto
 yes | az aks get-credentials --resource-group cp2_resource_group --name aks_cluster_kubernetes --file /mnt/d/Minhasse/Documents/Proyectos/casopractico2/ansible/kubeconfig.yaml --overwrite-existing
