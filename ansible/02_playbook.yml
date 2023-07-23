@@ -65,3 +65,20 @@
         state: started
       become: true
       become_user: root
+    
+    - name: Tarea 21 - Eliminar imágenes locales creadas
+      containers.podman.podman_image:
+        name: "{{ item }}"
+        state: absent
+      with_items:
+        - webserver:casopractico2
+      become: true
+      become_user: root
+
+    - name: Tarea 22 - Eliminar archivos utilizados para la creación de la imagen
+      ansible.builtin.file:
+        path: "/webserver"
+        state: absent
+      become: true
+      become_user: root
+  
